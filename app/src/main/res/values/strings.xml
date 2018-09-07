@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Note</string>
+    <string name="note_title_hint">Enter the text...</string>
+    <string name="note_title_label">Title</string>
+    <string name="note_details_label">Details</string>
+    <string name="note_important_label">Important</string>
+    <string name="date_picker_title">Date</string>
+    <string name="new_note">New Note</string>
+    <string name="delete_note">Delete Note</string>
+</resources>
