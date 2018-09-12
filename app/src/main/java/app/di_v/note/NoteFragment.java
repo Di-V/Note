@@ -3,6 +3,7 @@ package app.di_v.note;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
@@ -14,13 +15,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import java.util.Date;
 import java.util.UUID;
+
+import static android.support.v4.app.ActivityCompat.invalidateOptionsMenu;
 
 public class NoteFragment extends Fragment{
     private static final String ARG_NOTE_ID = "note_id";
@@ -29,9 +31,7 @@ public class NoteFragment extends Fragment{
 
     private Note mNote;
     private EditText mTitleField;
-    private Button mDateButton;
     private CheckBox mImportantCheckbox;
-
 
     public static NoteFragment newInstance(UUID noteId) {
         Bundle args = new Bundle();
@@ -55,20 +55,33 @@ public class NoteFragment extends Fragment{
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_note, menu);
+        // Update title date in menu
+        MenuItem dateItem = menu.findItem(R.id.date);
+        dateItem.setTitle(DateFormat.format("dd.MM.yyyy", mNote.getDate()).toString());
     }
 
     // Response to menu selection
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.delete_note:
-                NoteLab.get(getActivity()).deleteNote(mNote);
-                Intent intent = new Intent(getActivity(), NoteListActivity.class);
-                startActivity(intent);
+            case R.id.date:
+                FragmentManager manager = getFragmentManager();
+                DatePickerFragment dialog = DatePickerFragment.newInstance(mNote.getDate());
+                dialog.setTargetFragment(NoteFragment.this, REQUEST_DATE);
+                dialog.show(manager, DIALOG_DATE);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+
+        // This does work
+        MenuItem dateItem = menu.findItem(R.id.date);
+        dateItem.setTitle(DateFormat.format("dd.MM.yyyy", mNote.getDate()).toString());
     }
 
     @Override
@@ -101,19 +114,6 @@ public class NoteFragment extends Fragment{
             public void afterTextChanged(Editable s) {            }
         });
 
-        // Date button.
-        mDateButton = view.findViewById(R.id.note_date);
-        mDateButton.setText(DateFormat.format("dd.MM.yyyy", mNote.getDate()).toString());
-        mDateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentManager manager = getFragmentManager();
-                DatePickerFragment dialog = DatePickerFragment.newInstance(mNote.getDate());
-                dialog.setTargetFragment(NoteFragment.this, REQUEST_DATE);
-                dialog.show(manager, DIALOG_DATE);
-            }
-        });
-
         // Checkbox
         mImportantCheckbox = view.findViewById(R.id.note_important);
         mImportantCheckbox.setChecked(mNote.isImportant());
@@ -121,6 +121,20 @@ public class NoteFragment extends Fragment{
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mNote.setImportant(isChecked);
+            }
+        });
+
+        // floating action button
+        FloatingActionButton fab =
+                (FloatingActionButton) getActivity().findViewById(R.id.note_fab);
+
+        fab.setImageResource(R.drawable.ic_action_delete);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                NoteLab.get(getActivity()).deleteNote(mNote);
+                Intent intent = new Intent(getActivity(), NoteListActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -140,6 +154,6 @@ public class NoteFragment extends Fragment{
     }
 
     private void updateDate() {
-        mDateButton.setText(DateFormat.format("dd.MM.yyyy", mNote.getDate()).toString());
+        invalidateOptionsMenu(getActivity());
     }
 }

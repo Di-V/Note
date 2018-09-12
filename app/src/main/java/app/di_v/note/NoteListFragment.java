@@ -2,6 +2,7 @@ package app.di_v.note;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -35,6 +36,21 @@ public class NoteListFragment extends Fragment {
         mNoteRecyclerView = view.findViewById(R.id.note_recycler_view);
         mNoteRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        // floating action button
+        FloatingActionButton fab =
+                (FloatingActionButton) getActivity().findViewById(R.id.note_fab);
+
+        fab.setImageResource(R.drawable.ic_action_add);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Note note = new Note();
+                NoteLab.get(getActivity()).addNote(note);
+                Intent intent = NoteActivity.newIntent(getActivity(), note.getId());
+                startActivity(intent);
+            }
+        });
+
         updateUI();
 
         return view;
@@ -57,18 +73,13 @@ public class NoteListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.new_note:
-                Note note = new Note();
-                NoteLab.get(getActivity()).addNote(note);
-                Intent intent = NoteActivity.newIntent(getActivity(), note.getId());
-                startActivity(intent);
-                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-        private void updateUI() {
+    private void updateUI() {
         NoteLab noteLab = NoteLab.get(getActivity());
         List<Note> notes = noteLab.getNotes();
 
