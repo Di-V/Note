@@ -1,11 +1,13 @@
 package app.di_v.note;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,10 +24,17 @@ public class NoteListFragment extends Fragment {
     private RecyclerView mNoteRecyclerView;
     private NoteAdapter mAdapter;
 
+    protected static final String APP_PREFERENCES = "my_settings";
+    protected static final String APP_PREFERENCES_SPAN_COUNT = "span_counter";
+    protected SharedPreferences mSettings;
+
+    private int spanCount = 1;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        mSettings = this.getActivity().getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
     }
 
     @Override
@@ -34,11 +43,10 @@ public class NoteListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_note_list, container, false);
 
         mNoteRecyclerView = view.findViewById(R.id.note_recycler_view);
-        mNoteRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        updateUI();
 
         // floating action button
-        FloatingActionButton fab =
-                (FloatingActionButton) getActivity().findViewById(R.id.note_fab);
+        FloatingActionButton fab = getActivity().findViewById(R.id.note_fab);
 
         fab.setImageResource(R.drawable.ic_action_add);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -51,9 +59,16 @@ public class NoteListFragment extends Fragment {
             }
         });
 
-        updateUI();
-
         return view;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        SharedPreferences.Editor editor = mSettings.edit();
+        editor.putInt(APP_PREFERENCES_SPAN_COUNT, spanCount);
+        editor.apply();
     }
 
     @Override
@@ -69,11 +84,31 @@ public class NoteListFragment extends Fragment {
         inflater.inflate(R.menu.fragment_note_list, menu);
     }
 
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem menuItem = menu.findItem(R.id.list_type);
+        if (spanCount == 1) {
+            menuItem.setIcon(R.drawable.ic_action_grid);
+        } else {
+            menuItem.setIcon(R.drawable.ic_action_list);
+        }
+    }
+
     // Response to menu selection
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-
+            case R.id.list_type:
+                if (spanCount == 2) {
+                    spanCount = 1;
+                    item.setIcon(R.drawable.ic_action_grid);
+                } else {
+                    spanCount = 2;
+                    item.setIcon(R.drawable.ic_action_list);
+                }
+                mNoteRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(spanCount,
+                        StaggeredGridLayoutManager.VERTICAL));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -90,6 +125,13 @@ public class NoteListFragment extends Fragment {
             mAdapter.setNotes(notes);
             mAdapter.notifyDataSetChanged();
         }
+
+        if (mSettings.contains(APP_PREFERENCES_SPAN_COUNT)) {
+            spanCount = mSettings.getInt(APP_PREFERENCES_SPAN_COUNT, 0);
+            mNoteRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(spanCount,
+                    StaggeredGridLayoutManager.VERTICAL));
+        }   else  mNoteRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(spanCount,
+                    StaggeredGridLayoutManager.VERTICAL));
     }
 
     private class NoteHolder extends RecyclerView.ViewHolder

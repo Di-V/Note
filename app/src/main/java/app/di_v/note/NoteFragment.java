@@ -70,6 +70,11 @@ public class NoteFragment extends Fragment{
                 dialog.setTargetFragment(NoteFragment.this, REQUEST_DATE);
                 dialog.show(manager, DIALOG_DATE);
                 return true;
+            case R.id.delete_note:
+                NoteLab.get(getActivity()).deleteNote(mNote);
+                Intent intent = new Intent(getActivity(), NoteListActivity.class);
+                startActivity(intent);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -87,8 +92,10 @@ public class NoteFragment extends Fragment{
     @Override
     public void onPause() {
         super.onPause();
-
-        NoteLab.get(getActivity()).updateNote(mNote);
+        if (mTitleField.getText().toString().equals(""))
+        {
+            NoteLab.get(getActivity()).deleteNote(mNote);
+        } else NoteLab.get(getActivity()).updateNote(mNote);
     }
 
     @Override
@@ -111,7 +118,12 @@ public class NoteFragment extends Fragment{
             }
 
             @Override
-            public void afterTextChanged(Editable s) {            }
+            public void afterTextChanged(Editable s) {
+                FloatingActionButton fab = getActivity().findViewById(R.id.note_fab);
+                if (s.toString().equals("")) {
+                    fab.setImageResource(R.drawable.ic_action_close);
+                } else fab.setImageResource(R.drawable.ic_action_ok);
+            }
         });
 
         // Checkbox
@@ -125,16 +137,13 @@ public class NoteFragment extends Fragment{
         });
 
         // floating action button
-        FloatingActionButton fab =
-                (FloatingActionButton) getActivity().findViewById(R.id.note_fab);
+        FloatingActionButton fab = getActivity().findViewById(R.id.note_fab);
 
-        fab.setImageResource(R.drawable.ic_action_delete);
+        fab.setImageResource(R.drawable.ic_action_close);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                NoteLab.get(getActivity()).deleteNote(mNote);
-                Intent intent = new Intent(getActivity(), NoteListActivity.class);
-                startActivity(intent);
+                getActivity().onBackPressed();
             }
         });
 
