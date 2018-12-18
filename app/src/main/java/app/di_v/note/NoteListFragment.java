@@ -8,7 +8,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,22 +19,29 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
+/**
+ * @author Dmitry Vaganov
+ * @version 1.3.1
+ */
 public class NoteListFragment extends Fragment {
     private RecyclerView mNoteRecyclerView;
     private NoteAdapter mAdapter;
 
-    protected static final String APP_PREFERENCES = "my_settings";
-    protected static final String APP_PREFERENCES_SPAN_COUNT = "span_counter";
-    protected SharedPreferences mSettings;
+    private static final String TAG = "NoteListFragment";
+    private static final String APP_PREFERENCES = "notes_settings";
+    private static final String APP_PREFERENCES_SPAN_COUNT = "span_counter";
+    private SharedPreferences mSettings;
 
     private int spanCount = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate(Bundle) called");
         setHasOptionsMenu(true);
         mSettings = this.getActivity().getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
     }
@@ -43,6 +52,35 @@ public class NoteListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_note_list, container, false);
 
         mNoteRecyclerView = view.findViewById(R.id.note_recycler_view);
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                                  RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                if (direction == ItemTouchHelper.LEFT || direction == ItemTouchHelper.RIGHT) {
+                    mAdapter.swipeToDelete(viewHolder.getAdapterPosition());
+
+                    NoteList noteList = NoteList.get(getActivity());
+                    List<Note> notes = noteList.getNotes();
+
+                    if (mAdapter == null) {
+                        mAdapter = new NoteAdapter(notes);
+                        mNoteRecyclerView.setAdapter(mAdapter);
+                    } else {
+                        mAdapter.setNotes(notes);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        });
+
+        itemTouchHelper.attachToRecyclerView(mNoteRecyclerView);
         updateUI();
 
         // floating action button
@@ -53,7 +91,7 @@ public class NoteListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Note note = new Note();
-                NoteLab.get(getActivity()).addNote(note);
+                NoteList.get(getActivity()).addNote(note);
                 Intent intent = NoteActivity.newIntent(getActivity(), note.getId());
                 startActivity(intent);
             }
@@ -65,7 +103,7 @@ public class NoteListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-
+        Log.d(TAG, "onPause() called");
         SharedPreferences.Editor editor = mSettings.edit();
         editor.putInt(APP_PREFERENCES_SPAN_COUNT, spanCount);
         editor.apply();
@@ -74,10 +112,13 @@ public class NoteListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume() called");
         updateUI();
     }
 
-    // Populating the menu resource.
+    /**
+     * Populating the menu resource.
+     */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -94,17 +135,19 @@ public class NoteListFragment extends Fragment {
         }
     }
 
-    // Response to menu selection
+    /**
+     * Response to menu selection
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.list_type:
-                if (spanCount == 2) {
-                    spanCount = 1;
-                    item.setIcon(R.drawable.ic_action_grid);
-                } else {
+                if (spanCount == 1) {
                     spanCount = 2;
                     item.setIcon(R.drawable.ic_action_list);
+                } else {
+                    spanCount = 1;
+                    item.setIcon(R.drawable.ic_action_grid);
                 }
                 mNoteRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(spanCount,
                         StaggeredGridLayoutManager.VERTICAL));
@@ -115,8 +158,8 @@ public class NoteListFragment extends Fragment {
     }
 
     private void updateUI() {
-        NoteLab noteLab = NoteLab.get(getActivity());
-        List<Note> notes = noteLab.getNotes();
+        NoteList noteList = NoteList.get(getActivity());
+        List<Note> notes = noteList.getNotes();
 
         if (mAdapter == null) {
             mAdapter = new NoteAdapter(notes);
@@ -156,6 +199,7 @@ public class NoteListFragment extends Fragment {
             mTitleTextView.setText(mNote.getTitle());
             mDateTextView.setText(DateFormat.format("dd.MM", mNote.getDate()).toString());
             mImportantImageView.setVisibility(note.isImportant() ? View.VISIBLE : View.GONE);
+            itemView.setBackgroundColor(mNote.getColor());
         }
 
         @Override
@@ -192,6 +236,15 @@ public class NoteListFragment extends Fragment {
 
         public void setNotes(List<Note> notes) {
             mNotes = notes;
+        }
+
+        public void swipeToDelete(int position) {
+            NoteList noteList = NoteList.get(getActivity());
+            Note note = mNotes.get(position);
+            noteList.deleteNote(note);
+            mAdapter.notifyItemRemoved(position);
+            mAdapter.notifyItemRangeChanged(position, noteList.getNotes().size());
+            Toast.makeText(getContext(), R.string.toast_delete_note, Toast.LENGTH_SHORT).show();
         }
     }
 }

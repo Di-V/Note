@@ -1,11 +1,18 @@
 <resources>
-    <string name="app_name">Note</string>
+    <string name="app_name">Notes</string>
+    <string name="app_name_note"></string>
     <string name="note_title_hint">Enter the text...</string>
     <string name="note_title_label">Title</string>
-    <string name="note_details_label">Details</string>
+    <string name="toast_delete_note">Deleted...</string>
     <string name="note_important_label">Important</string>
     <string name="date_picker_title">Date</string>
+    <string name="color_picker_title">Color</string>
+    <string name="pick_color">Pick a Color</string>
     <string name="new_note">New Note</string>
     <string name="delete_note">Delete</string>
     <string name="list_type">List/Grid</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="title">Title</string>
+    <string name="date">Date</string>
 </resources>

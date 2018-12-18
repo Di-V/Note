@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!--<item
+        android:id="@+id/color"
+        android:icon="@drawable/ic_action_color"
+        android:title="@string/color_picker_title"
+        app:showAsAction="ifRoom"
+        android:elevation="2dp"/>-->
     <item
         android:id="@+id/date"
         android:title="@string/date_picker_title"

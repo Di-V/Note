@@ -15,6 +15,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+/**
+ * @author Dmitry Vaganov
+ * @version 1.0.2
+ */
 public class DatePickerFragment extends DialogFragment {
     public static final String EXTRA_DATE = "app.di_v.android.note.date";
     private static final String ARG_DATE = "date";

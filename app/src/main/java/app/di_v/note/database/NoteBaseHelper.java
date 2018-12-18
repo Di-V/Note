@@ -6,8 +6,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import app.di_v.note.database.NoteDb.NoteTable;
 
+/**
+ * Class for working with the database.
+ * @author Dmitry Vaganov
+ * @version 1.1.0
+ */
 public class NoteBaseHelper extends SQLiteOpenHelper {
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
     private static final String DATABASE_NAME = "noteBase.db";
 
     public NoteBaseHelper(Context context) {
@@ -20,6 +25,7 @@ public class NoteBaseHelper extends SQLiteOpenHelper {
                 " _id integer primary key autoincrement, " +
                 NoteTable.Cols.UUID + ", " +
                 NoteTable.Cols.TITLE + ", " +
+                NoteTable.Cols.COLOR + ", " +
                 NoteTable.Cols.DATE + ", " +
                 NoteTable.Cols.IMPORTANT +
                 ")"

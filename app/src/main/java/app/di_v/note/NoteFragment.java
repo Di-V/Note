@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,20 +20,29 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import java.util.Date;
 import java.util.UUID;
 
 import static android.support.v4.app.ActivityCompat.invalidateOptionsMenu;
 
+/**
+ * @author Dmitry Vaganov
+ * @version 1.3.5
+ */
 public class NoteFragment extends Fragment{
+    private static final String TAG = "NoteFragment";
     private static final String ARG_NOTE_ID = "note_id";
+    private static final String DIALOG_COLOR = "DialogColor";
     private static final String DIALOG_DATE = "DialogDate";
+    private static final int REQUEST_COLOR = 1;
     private static final int REQUEST_DATE = 0;
 
     private Note mNote;
     private EditText mTitleField;
     private CheckBox mImportantCheckbox;
+    private ImageButton mButtonColor;
 
     public static NoteFragment newInstance(UUID noteId) {
         Bundle args = new Bundle();
@@ -45,9 +56,45 @@ public class NoteFragment extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate(Bundle) called");
         UUID noteId = (UUID) getArguments().getSerializable(ARG_NOTE_ID);
-        mNote = NoteLab.get(getActivity()).getNote(noteId);
+        mNote = NoteList.get(getActivity()).getNote(noteId);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart() called");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume() called");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause() called");
+        /*if (mTitleField.getText().toString().equals(""))
+        {
+            NoteList.get(getActivity()).deleteNote(mNote);
+        } else NoteList.get(getActivity()).updateNote(mNote);*/
+        NoteList.get(getActivity()).updateNote(mNote);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop() called");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy() called");
     }
 
     // Populating the menu resource.
@@ -63,15 +110,20 @@ public class NoteFragment extends Fragment{
     // Response to menu selection
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        FragmentManager manager = getFragmentManager();
         switch (item.getItemId()) {
+            /*case R.id.color:
+                DialogFragment newFragment = new ColorPickerFragment().newInstance(mNote.getColor());
+                newFragment.setTargetFragment(NoteFragment.this, REQUEST_COLOR);
+                newFragment.show(manager, DIALOG_COLOR);
+                return true;*/
             case R.id.date:
-                FragmentManager manager = getFragmentManager();
                 DatePickerFragment dialog = DatePickerFragment.newInstance(mNote.getDate());
                 dialog.setTargetFragment(NoteFragment.this, REQUEST_DATE);
                 dialog.show(manager, DIALOG_DATE);
                 return true;
             case R.id.delete_note:
-                NoteLab.get(getActivity()).deleteNote(mNote);
+                NoteList.get(getActivity()).deleteNote(mNote);
                 Intent intent = new Intent(getActivity(), NoteListActivity.class);
                 startActivity(intent);
                 return true;
@@ -90,21 +142,13 @@ public class NoteFragment extends Fragment{
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        if (mTitleField.getText().toString().equals(""))
-        {
-            NoteLab.get(getActivity()).deleteNote(mNote);
-        } else NoteLab.get(getActivity()).updateNote(mNote);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_note, container, false); /**/
+        View view = inflater.inflate(R.layout.fragment_note, container, false);
 
         mTitleField = view.findViewById(R.id.note_title);
         mTitleField.setText(mNote.getTitle());
+        mTitleField.setBackgroundColor(mNote.getColor());
         mTitleField.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -136,6 +180,18 @@ public class NoteFragment extends Fragment{
             }
         });
 
+        //Button color
+        mButtonColor = view.findViewById(R.id.button_color);
+        //mButtonColor.setColorFilter(mNote.getColor());
+        mButtonColor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DialogFragment newFragment = new ColorPickerFragment().newInstance(mNote.getColor());
+                newFragment.setTargetFragment(NoteFragment.this, REQUEST_COLOR);
+                newFragment.show(getFragmentManager(), DIALOG_COLOR);
+            }
+        });
+
         // floating action button
         FloatingActionButton fab = getActivity().findViewById(R.id.note_fab);
 
@@ -160,6 +216,17 @@ public class NoteFragment extends Fragment{
             mNote.setDate(date);
             updateDate();
         }
+        if (requestCode == REQUEST_COLOR) {
+            int color = (int) data.getSerializableExtra(ColorPickerFragment.EXTRA_COLOR);
+            mNote.setColor(color);
+            updateColor();
+        }
+    }
+
+    private void updateColor() {
+        int color = mNote.getColor();
+        mTitleField.setBackgroundColor(color);
+        //mButtonColor.setColorFilter(color);
     }
 
     private void updateDate() {

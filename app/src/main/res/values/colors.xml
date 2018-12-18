@@ -6,4 +6,15 @@
 
     <color name="colorBackground">#ECEFF1</color>
     <color name="colorNote">#FFF</color>
+
+    <color name="blue">#4FC3F7</color>
+    <color name="gray">#E0E0E0</color>
+    <color name="green">#A5D6A7</color>
+    <color name="orange">#FFCC80</color>
+    <color name="purple">#E1BEE7</color>
+    <color name="red">#FF5252</color>
+    <color name="pink">#F8BBD0</color>
+    <color name="white">#FFF</color>
+    <color name="yellow">#FFF176</color>
+    <color name="lime">#EEFF41</color>
 </resources>
