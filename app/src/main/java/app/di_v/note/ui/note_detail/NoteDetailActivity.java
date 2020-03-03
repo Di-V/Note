@@ -1,21 +1,19 @@
-package app.di_v.note;
+package app.di_v.note.ui.note_detail;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 
 import java.util.UUID;
 
-/**
- * @author Dmitry Vaganov
- * @version 1.0.2
- */
-public class NoteActivity extends SingleFragmentActivity {
+import app.di_v.note.base.BaseActivity;
+
+public class NoteDetailActivity extends BaseActivity {
 
     private static final String EXTRA_NOTE_ID = "app.di_v.note.note_id";
 
     public static Intent newIntent(Context packageContext, UUID noteId) {
-        Intent intent = new Intent(packageContext, NoteActivity.class);
+        Intent intent = new Intent(packageContext, NoteDetailActivity.class);
         intent.putExtra(EXTRA_NOTE_ID, noteId);
         return intent;
     }
@@ -24,6 +22,6 @@ public class NoteActivity extends SingleFragmentActivity {
     protected Fragment createFragment() {
         UUID noteId = (UUID) getIntent()
                 .getSerializableExtra(EXTRA_NOTE_ID);
-        return NoteFragment.newInstance(noteId);
+        return NoteDetailFragment.newInstance(noteId);
     }
 }

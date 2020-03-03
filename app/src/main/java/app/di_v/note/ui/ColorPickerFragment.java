@@ -1,17 +1,15 @@
-package app.di_v.note;
+package app.di_v.note.ui;
 
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
 
-/**
- * @author Dmitry Vaganov
- * @version 1.0.0
- */
+import app.di_v.note.R;
+
 public class ColorPickerFragment extends DialogFragment {
     public static final String EXTRA_COLOR = "app.di_v.android.note.color";
     private static final String ARG_COLOR = "color";
