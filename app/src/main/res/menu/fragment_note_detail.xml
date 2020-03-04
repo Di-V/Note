@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_important"
+        android:title="@string/note_important_label"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/menu_color"
+        android:icon="@drawable/ic_action_color"
+        android:title="@string/pick_color"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/menu_delete"
+        android:icon="@drawable/ic_action_delete"
+        android:title="@string/pick_color"
+        app:showAsAction="ifRoom"/>
+</menu>

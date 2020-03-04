@@ -15,11 +15,15 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 import java.util.UUID;
@@ -35,12 +39,12 @@ public class NoteDetailFragment extends Fragment{
     private static final String DIALOG_DATE = "DialogDate";
     private static final int REQUEST_COLOR = 1;
     private static final int REQUEST_DATE = 0;
+    private Boolean check = true;
 
     private UUID mNoteId;
     private NoteDetailViewModel mViewModel;
     private EditText mTitleField;
-    private CheckBox mImportantCheckbox;
-    private ImageButton mButtonColor;
+    private FloatingActionButton fab;
 
     public static NoteDetailFragment newInstance(UUID noteId) {
         Bundle args = new Bundle();
@@ -73,13 +77,19 @@ public class NoteDetailFragment extends Fragment{
         mViewModel.getNoteLiveData().observe(getViewLifecycleOwner(), note -> {
         try {
             mTitleField.setBackgroundColor(note.getColor());
-            mImportantCheckbox.setChecked(note.isImportant());
+            check = note.isImportant();
         } catch (Exception e) {}
         });
     }
 
     private void initUi(View view){
         mViewModel = new ViewModelProvider(getActivity(), new ViewModelFactory(getActivity().getApplication(), mNoteId)).get(NoteDetailViewModel.class);
+
+        Toolbar toolbar = (Toolbar) view.findViewById(R.id.bottom_app_bar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+
+        fab = view.findViewById(R.id.fab_back);
+        fab.setOnClickListener(v -> getActivity().onBackPressed());
 
         mTitleField = view.findViewById(R.id.note_title);
         try {
@@ -91,7 +101,6 @@ public class NoteDetailFragment extends Fragment{
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
@@ -103,56 +112,51 @@ public class NoteDetailFragment extends Fragment{
 
             @Override
             public void afterTextChanged(Editable s) {
-                FloatingActionButton fab = getActivity().findViewById(R.id.note_fab);
-                if (s.toString().equals("")) {
-                    fab.setImageResource(R.drawable.ic_action_close);
-                } else fab.setImageResource(R.drawable.ic_action_ok);
             }
         });
-
-        // Checkbox
-        mImportantCheckbox = view.findViewById(R.id.note_important);
-        mImportantCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> mViewModel.setImportant(isChecked));
-
-        mButtonColor = view.findViewById(R.id.button_color);
-        mButtonColor.setOnClickListener(view1 -> {
-            DialogFragment newFragment = new ColorPickerFragment().newInstance(R.color.white);
-            newFragment.setTargetFragment(NoteDetailFragment.this, REQUEST_COLOR);
-            newFragment.show(getParentFragmentManager(), DIALOG_COLOR);
-        });
-
-        // floating action button
-        FloatingActionButton fab = getActivity().findViewById(R.id.note_fab);
-        fab.setImageResource(R.drawable.ic_action_close);
-        fab.setOnClickListener(v -> getActivity().onBackPressed());
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(Menu menu, @NotNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.fragment_note, menu);
+        inflater.inflate(R.menu.fragment_note_detail, menu);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem menuItem = menu.findItem(R.id.menu_important);
+        if (check) {
+            menuItem.setIcon(R.drawable.ic_important);
+        } else {
+            menuItem.setIcon(R.drawable.ic_important_false);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.date:
-               /* DatePickerFragment dialog = DatePickerFragment.newInstance(mViewModel.getNoteLiveData().getValue().getDate());
-                dialog.setTargetFragment(NoteDetailFragment.this, REQUEST_DATE);
-                dialog.show(manager, DIALOG_DATE);*/
+            case R.id.menu_important:
+                if (check) {
+                    item.setIcon(R.drawable.ic_important_false);
+                    check = false;
+                } else {
+                    item.setIcon(R.drawable.ic_important);
+                    check = true;
+                }
+                mViewModel.setImportant(check);
                 return true;
-            case R.id.delete_note:
+            case R.id.menu_color:
+                DialogFragment newFragment = new ColorPickerFragment().newInstance(R.color.white);
+                newFragment.setTargetFragment(NoteDetailFragment.this, REQUEST_COLOR);
+                newFragment.show(getParentFragmentManager(), DIALOG_COLOR);
+                return true;
+            case R.id.menu_delete:
                 getActivity().finish();
                 mViewModel.deleteNote();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
     }
 
     @Override

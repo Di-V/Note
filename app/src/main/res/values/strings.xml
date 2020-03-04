@@ -15,4 +15,10 @@
     <string name="cancel">Cancel</string>
     <string name="title">Title</string>
     <string name="date">Date</string>
+    <string name="about_title">About</string>
+    <string name="sign_out">Close</string>
+    <string name="bottom_sheet_name">Hello!</string>
+    <string name="bottom_sheet_email"> </string>
+    <string name="about_description"> Messenger 707 \n powered by di-v</string>
+    <string name="about_close">close</string>
 </resources>

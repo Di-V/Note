@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -32,6 +35,7 @@ public class NoteListFragment extends Fragment {
     private RecyclerView mNoteRecyclerView;
     private NoteListAdapter mAdapter;
     private NoteListViewModel viewModel;
+    private FloatingActionButton fab;
 
     private static final String APP_PREFERENCES = "notes_settings";
     private static final String APP_PREFERENCES_SPAN_COUNT = "span_counter";
@@ -91,6 +95,11 @@ public class NoteListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                Log.d("MF", "true!!!!!!!!!");
+                BottomNavigationFragment bfm = new BottomNavigationFragment();
+                bfm.show(getChildFragmentManager(), bfm.getTag());
+                return true;
             case R.id.list_type:
                 if (spanCount == 1) {
                     spanCount = 2;
@@ -108,6 +117,9 @@ public class NoteListFragment extends Fragment {
     }
 
     private void initUi(View view) {
+        Toolbar toolbar = (Toolbar) view.findViewById(R.id.main_bottom_app_bar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+
         mAdapter = new NoteListAdapter();
         mNoteRecyclerView = view.findViewById(R.id.note_recycler_view);
         mNoteRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -135,9 +147,7 @@ public class NoteListFragment extends Fragment {
         updatePrefUI();
 
         // floating action button
-        FloatingActionButton fab = getActivity().findViewById(R.id.note_fab);
-
-        fab.setImageResource(R.drawable.ic_action_add);
+        fab = view.findViewById(R.id.fab_add_note);
         fab.setOnClickListener(v -> {
             Note note = new Note();
             viewModel.createNote(note);

@@ -14,6 +14,12 @@
     <string name="list_type">Список/Сетка</string>
     <string name="ok">ОК</string>
     <string name="cancel">Отмена</string>
-    <string name="title">Title</string>
-    <string name="date">Date</string>
+    <string name="title">Текст</string>
+    <string name="date">Дата</string>
+    <string name="about_title">О приложении</string>
+    <string name="sign_out">Закрыть</string>
+    <string name="bottom_sheet_name">Привет!</string>
+    <string name="bottom_sheet_email"> </string>
+    <string name="about_description"> Messenger 707 \n powered by di-v</string>
+    <string name="about_close">Закрыть</string>
 </resources>
